@@ -122,11 +122,10 @@ if __name__ == "__main__":
         oF.write(str_out+'\n')
     oF.close()
 
-"""
 
 
     # Compute the silhouette scores for each sample/cluster
-    sample_silhouette_values = silhouette_samples(data, data_cl)
+    sample_silhouette_values = silhouette_samples(dist, data_cl.labels_, metric="precomputed")
     print("Silhouette index for each cluster:")
     # Aggregate the silhouette scores for samples belonging to
     # cluster i, and sort them
@@ -140,4 +139,3 @@ if __name__ == "__main__":
 
         print(size_cluster_i,ith_cluster_silhouette_values)
 
-"""
