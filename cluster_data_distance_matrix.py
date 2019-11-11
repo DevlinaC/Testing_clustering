@@ -107,7 +107,11 @@ if __name__ == "__main__":
     # The silhouette_score gives the average value for all the samples.
     # This gives a perspective into the density and separation of the formed
     # clusters
-    silhouette_avg = silhouette_score(data, labels)
+    ## NEED TO USE DISTANCE NOT SIMILARITY
+    '''
+   The Silhouette Coefficient is calculated using the mean intra-cluster distance (a) and the mean nearest-cluster DISTANCE (b) for each sample.  
+    '''
+    silhouette_avg = silhouette_score(dist, labels)
     print("For n_clusters =", len(L),
           "The average silhouette_score is :", silhouette_avg)
     for key, cl in zip(data.columns, labels):
