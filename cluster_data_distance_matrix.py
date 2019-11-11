@@ -12,6 +12,7 @@ from optparse import OptionParser, OptionValueError
 import numpy as np
 import pandas as pd
 from sklearn import cluster
+from sklearn.metrics import silhouette_samples, silhouette_score
 
 
 def _check_inputFile(option, opt_str, value, parser):
@@ -21,9 +22,8 @@ def _check_inputFile(option, opt_str, value, parser):
     setattr(parser.values, option.dest, Path(f_path))
     parser.values.saved_infile = True
 
-
 def read_data(inFile) -> pd.DataFrame:
-    """Conver file to pandas dataframe
+    """Convert file to pandas dataframe
     Arguments:
         inFile {file path}
     Returns:
@@ -57,10 +57,8 @@ def read_data(inFile) -> pd.DataFrame:
         index=keys, columns=keys)
     return M
 
-
 def build_distance_matrix(data: pd.DataFrame):
     def dist(x): return 1.0/(x*x)
-    data_out = np.matrix(data.values)
     data_out = np.vectorize(dist)(data.values)
     np.fill_diagonal(data_out, 0)
     return data_out
@@ -86,8 +84,7 @@ if __name__ == "__main__":
     in_file = Path(options.input_file)
     out_file = Path(options.out_file)
     cutoff = float(options.cutoff)
-    start_graph_file = out_file.parent/f"{out_file.stem}_start.graphml"
-    end_graph_file = out_file.parent/f"{out_file.stem}_end.graphml"
+
 
     data = read_data(in_file)
     dist = build_distance_matrix(data)
@@ -101,14 +98,46 @@ if __name__ == "__main__":
                                 # observations of pairs of clusters
 
     data_cl = dist_test.fit(dist)
+    #cluster_labels = clusterer.fit_predict(X)
     L = [[] for x in range(data_cl.n_clusters_)]
-    for key, cl in zip(data.columns, data_cl.labels_):
+
+    # getting labels for printing and to calculate silhouette score #
+    labels = data_cl.labels_
+
+    # The silhouette_score gives the average value for all the samples.
+    # This gives a perspective into the density and separation of the formed
+    # clusters
+    silhouette_avg = silhouette_score(data, labels)
+    print("For n_clusters =", len(L),
+          "The average silhouette_score is :", silhouette_avg)
+    for key, cl in zip(data.columns, labels):
         L[cl].append(key)
     oF = open(out_file, 'w')
+    nb_clusters = len(L)
+    oF.write(f"# total clusters {nb_clusters} , average silhouette_coefficient {silhouette_avg} \n")
     for ix, cl in enumerate(L, 1):
         str_out = f"{ix} {len(cl)}"
         for el in cl:
             str_out += f" {el}"
         oF.write(str_out+'\n')
-    oF.write(f"# total cluster {ix}\n")
     oF.close()
+
+"""
+
+
+    # Compute the silhouette scores for each sample/cluster
+    sample_silhouette_values = silhouette_samples(data, data_cl)
+    print("Silhouette index for each cluster:")
+    # Aggregate the silhouette scores for samples belonging to
+    # cluster i, and sort them
+    for i in range(nb_clusters):
+        ith_cluster_silhouette_values = \
+            sample_silhouette_values[labels == i]
+
+        ith_cluster_silhouette_values.sort()
+
+        size_cluster_i = ith_cluster_silhouette_values.shape[0]
+
+        print(size_cluster_i,ith_cluster_silhouette_values)
+
+"""

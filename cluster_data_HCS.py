@@ -20,8 +20,10 @@ works only with NetworkX 2.3 (not 2.4 for now)
 import itertools as itts
 from pathlib import Path
 from optparse import OptionParser, OptionValueError
+from typing import Any, Union, Generator
 
 import networkx as nx
+from sklearn import metrics
 
 
 def _check_inputFile(option, opt_str, value, parser):
@@ -132,12 +134,16 @@ if __name__ == "__main__":
     oF = open(out_file, 'w')
     oF.write(f"# number nodes = {num_nodes(G)}\n")
     oF.write(f"# number edges = {nx.number_of_edges(G)}\n")
+
     if options.graph:
         nx.write_graphml(G, str(start_graph_file))
     G_HCS = HCS(G)
     if options.graph:
         nx.write_graphml(G, str(end_graph_file))
+    #labels = nx.connected_component_subgraphs(G_HCS)
+    #si_score = metrics.silhouette_score(data, labels, metric='euclidean')
     oF.write(f"transitivity {nx.transitivity(G_HCS)}\n")
+    #oF.write(f"Silhoutte index {si_score}\n")
     for ix, g in enumerate(
             nx.connected_component_subgraphs(G_HCS),  1):
         str_out = ""

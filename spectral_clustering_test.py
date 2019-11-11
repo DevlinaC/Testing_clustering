@@ -24,7 +24,8 @@ data_file = main_dir/"NW_seqid_complex_test.txt"
 
 
 def read_data(inFile) -> pd.DataFrame:
-    """Conver file to pandas dataframe
+    """
+    Convert file to pandas dataframe
     Arguments:
         inFile {file path}
     Returns:
@@ -64,7 +65,7 @@ data = read_data(data_file)
 
 
 def dist(x):
-    return(1/x)  # using simplest method, we can play with this
+    return(1/x*x)  # using simplest method, we can play with this
 
 
 def build_distance_matrix(data: pd.DataFrame):
@@ -86,8 +87,8 @@ def getAffinityMatrix(data, k: int = 7, cutoff: float = 0.3):
     dists = build_distance_matrix(data)
 
     # for each row, sort the distances ascending order and take the index of the
-    # k-th position (nearest neighbour) u need some k-nearest cutoff see FIG 2 and Formula 2 from the paper atop
-    # they say this K is dependent on the type of data and dimension, maybe we have need to play with it
+    # k-th position (nearest neighbour) we need some k-nearest cutoff see FIG 2 and Formula 2 from the paper atop
+    # they say this K is dependent on the type of data and dimension, maybe we have to play with it
     # this K is needed to do  local scaling (in the paper they use 7 as the value)
     knn_distances = np.sort(dists, axis=0)[k]
     knn_distances = knn_distances[np.newaxis].T
@@ -99,15 +100,15 @@ def getAffinityMatrix(data, k: int = 7, cutoff: float = 0.3):
     affinity_matrix[np.where(np.isnan(affinity_matrix))] = 0.0
     # apply exponential
     affinity_matrix = np.exp(affinity_matrix)
-    # use cutoff remowe edges
-    dist_cut = dist(cutoff) # transfor cutoff to distance
+    # use cutoff to remove edges
+    dist_cut = dist(cutoff) # transfer cutoff to distance
     # IMPORTANT may not work test this line
-    affinity_matrix[dists > dist_cut] = 0 # zeros affinity of the  
+    affinity_matrix[dists > dist_cut] = 0 # zeros affinity when dist > dist_cut
     np.fill_diagonal(affinity_matrix, 0)
     return affinity_matrix
 
 
-def eigenDecomposition(A, plot=True, topK=3): # topK is the no. of highest eigenvalue vectors #
+def eigenDecomposition(A, plot=True, topK=5): # topK is the no. of highest eigenvalue vectors #
     """
     :param A: Affinity matrix
     :param plot: plots the sorted eigen values for visual inspection
