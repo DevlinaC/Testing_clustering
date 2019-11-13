@@ -14,6 +14,13 @@ import pandas as pd
 from sklearn import cluster
 from sklearn.metrics import silhouette_samples, silhouette_score
 
+def dist_matrix_to_1d(M):
+    A =[]
+    for ix,  row in enumerate(M[:-1]):
+        for iy, val in enumerate(row[ix+1:], ix+1):
+            A.append(val)
+    return np.array(A)
+
 
 def _check_inputFile(option, opt_str, value, parser):
     f_path = Path(value)
@@ -111,7 +118,7 @@ if __name__ == "__main__":
     '''
    The Silhouette Coefficient is calculated using the mean intra-cluster distance (a) and the mean nearest-cluster DISTANCE (b) for each sample.  
     '''
-    silhouette_avg = silhouette_score(dist, labels)
+    silhouette_avg = silhouette_score(dist, labels, metric='precomputed')
     print("For n_clusters =", len(L),
           "The average silhouette_score is :", silhouette_avg)
     for key, cl in zip(data.columns, labels):
@@ -143,3 +150,4 @@ if __name__ == "__main__":
 
         print(size_cluster_i,ith_cluster_silhouette_values)
 
+    array_1d = dist_matrix_to_1d(dist)
